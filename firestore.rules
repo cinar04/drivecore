@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() { return request.auth != null; }
+
+    function isMember(orgId) {
+      return isAuth() &&
+        exists(/databases/$(database)/documents/orgMembers/$(orgId + '_' + request.auth.uid));
+    }
+
+    function getRole(orgId) {
+      return get(/databases/$(database)/documents/orgMembers/$(orgId + '_' + request.auth.uid)).data.role;
+    }
+
+    function hasRole(orgId, role) {
+      let roles = {
+        'viewer': 1, 'staff': 2, 'admin': 3, 'owner': 4
+      };
+      return isMember(orgId) && roles[getRole(orgId)] >= roles[role];
+    }
+
+    // ─── Admin profilleri ─────────────────────────────────
+    match /admins/{userId} {
+      allow read: if isAuth() && request.auth.uid == userId;
+      allow write: if isAuth() && request.auth.uid == userId;
+
+      // Kişisel, proje (org) bazlı pano düzeni — sadece sahibi okuyup yazabilir
+      match /orgDashboardPrefs/{orgId} {
+        allow read, write: if isAuth() && request.auth.uid == userId;
+      }
+    }
+
+    // ─── Kurumlar ─────────────────────────────────────────
+    match /orgs/{orgId} {
+      allow read: if isMember(orgId);
+      allow create: if isAuth();
+      allow update: if hasRole(orgId, 'admin');
+      allow delete: if hasRole(orgId, 'owner');
+    }
+
+    // ─── Üyelik ───────────────────────────────────────────
+    match /orgMembers/{memberId} {
+      allow read: if isAuth() && (
+        resource.data.uid == request.auth.uid ||
+        isMember(resource.data.orgId)
+      );
+      allow create: if isAuth();
+      allow update: if hasRole(resource.data.orgId, 'admin');
+      allow delete: if hasRole(resource.data.orgId, 'admin') ||
+                       request.auth.uid == resource.data.uid;
+    }
+
+    // ─── Davetler ─────────────────────────────────────────
+    match /orgInvites/{inviteId} {
+      allow read: if isAuth() && (
+        isMember(resource.data.orgId) ||
+        resource.data.email == request.auth.token.email
+      );
+      allow create: if hasRole(request.resource.data.orgId, 'admin');
+      allow update: if isAuth();
+      allow delete: if hasRole(resource.data.orgId, 'admin');
+    }
+
+    // ─── Sürücüler ────────────────────────────────────────
+    match /drivers/{driverId} {
+      allow read: if isMember(resource.data.orgId);
+      allow create: if hasRole(request.resource.data.orgId, 'staff');
+      allow update: if hasRole(resource.data.orgId, 'staff');
+      allow delete: if hasRole(resource.data.orgId, 'admin');
+    }
+
+    // ─── Araçlar ──────────────────────────────────────────
+    match /vehicles/{vehicleId} {
+      allow read: if isMember(resource.data.orgId);
+      allow create: if hasRole(request.resource.data.orgId, 'staff');
+      allow update: if hasRole(resource.data.orgId, 'staff');
+      allow delete: if hasRole(resource.data.orgId, 'admin');
+    }
+
+    // ─── Aktivite günlüğü ─────────────────────────────────
+    match /activityLogs/{logId} {
+      allow read: if isMember(resource.data.orgId);
+      allow create: if isMember(request.resource.data.orgId);
+      allow update, delete: if hasRole(resource.data.orgId, 'admin');
+    }
+
+    // ─── Bildirimler ──────────────────────────────────────
+    match /notifications/{notifId} {
+      allow read, write: if isMember(resource.data.orgId);
+      allow create: if isMember(request.resource.data.orgId);
+    }
+  }
+}
