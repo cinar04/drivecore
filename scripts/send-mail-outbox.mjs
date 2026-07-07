@@ -16,7 +16,8 @@
 //                                     Domain doğrulamadıysan Resend'in test adresini kullan:
 //                                     "DriveCore <onboarding@resend.dev>"
 
-import admin from 'firebase-admin';
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const {
   FIREBASE_SERVICE_ACCOUNT_JSON,
@@ -35,11 +36,11 @@ if (!RESEND_API_KEY) {
 
 const serviceAccount = JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON);
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+const app = initializeApp({
+  credential: cert(serviceAccount),
 });
 
-const db = admin.firestore();
+const db = getFirestore(app);
 
 // ─── Türkçe e-posta şablonları ──────────────────────────────────────────────
 
@@ -151,7 +152,7 @@ async function main() {
     try {
       const { subject, html } = buildTemplate(mail.data || {});
       await sendViaResend(mail.to, subject, html);
-      await docSnap.ref.update({ status: 'sent', sentAt: admin.firestore.FieldValue.serverTimestamp() });
+      await docSnap.ref.update({ status: 'sent', sentAt: FieldValue.serverTimestamp() });
       console.log(`Gönderildi: ${mail.to} (${mail.template})`);
     } catch (err) {
       console.error(`Gönderilemedi (${docSnap.id}):`, err.message);
