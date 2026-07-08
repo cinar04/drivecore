@@ -1,0 +1,34 @@
+name: E-posta Kuyruğunu Gönder
+
+# Her 10 dakikada bir çalışır (GitHub'ın ücretsiz planında sınırsız/aylık dakika
+# kotası dahilinde çalışır — özel repo'larda aylık 2000 dakika ücretsiz kota var,
+# bu iş çok kısa sürdüğü için bu kotayı pratikte hiç zorlamaz).
+# Ayrıca "workflow_dispatch" ile GitHub Actions sekmesinden elle de tetiklenebilir.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  send-emails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo'yu indir
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: firebase-admin kur
+        run: npm install firebase-admin --no-save
+
+      - name: E-posta kuyruğunu işle
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          APP_RESET_PASSWORD_URL: ${{ secrets.APP_RESET_PASSWORD_URL }}
+          APP_LOGO_URL: ${{ secrets.APP_LOGO_URL }}
+        run: node scripts/send-mail-outbox.mjs
