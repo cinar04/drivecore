@@ -1,12 +1,15 @@
 name: E-posta Kuyruğunu Gönder
 
-# Her 10 dakikada bir çalışır (GitHub'ın ücretsiz planında sınırsız/aylık dakika
-# kotası dahilinde çalışır — özel repo'larda aylık 2000 dakika ücretsiz kota var,
-# bu iş çok kısa sürdüğü için bu kotayı pratikte hiç zorlamaz).
-# Ayrıca "workflow_dispatch" ile GitHub Actions sekmesinden elle de tetiklenebilir.
+# Periyodik tarama YOK. Bunun yerine, client tarafında bir mail
+# `mailOutbox`'a 'pending' olarak yazıldığı an (bkz. src/lib/mailOutbox.ts ->
+# triggerMailWorker), tarayıcıdan GitHub API'sine atılan "repository_dispatch"
+# isteğiyle bu workflow ANINDA tetiklenir.
+# "workflow_dispatch" ile GitHub Actions sekmesinden elle de tetiklenebilir
+# (ör. tetikleme isteği bir sebeple ulaşmazsa, kuyrukta kalan mailleri
+# elle göndermek için).
 on:
-  schedule:
-    - cron: '*/10 * * * *'
+  repository_dispatch:
+    types: [mail-queued]
   workflow_dispatch:
 
 jobs:
