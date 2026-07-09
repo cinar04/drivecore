@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&family=Nunito:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;600;700&family=Merriweather:wght@300;400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,13 +13,95 @@
     scroll-behavior: smooth;
   }
 
-  body {
-    @apply bg-bg text-white font-sans antialiased;
-    background-color: #0F172A;
+  :root {
+    color-scheme: light;
+    --app-bg: #F8FAFC;
+    --app-surface: #FFFFFF;
+    --app-card: #F8FAFC;
+    --app-text: #0F172A;
+    --app-text-muted: rgba(15, 23, 42, 0.68);
+    --app-text-soft: rgba(15, 23, 42, 0.5);
+    --app-border: rgba(15, 23, 42, 0.12);
+    --app-overlay: rgba(15, 23, 42, 0.06);
+    --app-overlay-strong: rgba(15, 23, 42, 0.12);
   }
 
-  .dark body {
-    background-color: #0F172A;
+  html.dark {
+    color-scheme: dark;
+    --app-bg: #0F172A;
+    --app-surface: #1E293B;
+    --app-card: #111827;
+    --app-text: #FFFFFF;
+    --app-text-muted: rgba(255, 255, 255, 0.7);
+    --app-text-soft: rgba(255, 255, 255, 0.5);
+    --app-border: rgba(255, 255, 255, 0.08);
+    --app-overlay: rgba(255, 255, 255, 0.05);
+    --app-overlay-strong: rgba(255, 255, 255, 0.1);
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--app-bg);
+    color: var(--app-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .bg-bg {
+    background-color: var(--app-bg) !important;
+  }
+
+  .bg-bg-surface {
+    background-color: var(--app-surface) !important;
+  }
+
+  .bg-bg-card {
+    background-color: var(--app-card) !important;
+  }
+
+  .text-white {
+    color: var(--app-text) !important;
+  }
+
+  .text-white\/30 {
+    color: var(--app-text-soft) !important;
+  }
+
+  .text-white\/40 {
+    color: var(--app-text-muted) !important;
+  }
+
+  .text-white\/50 {
+    color: var(--app-text-muted) !important;
+  }
+
+  .text-white\/60 {
+    color: var(--app-text-muted) !important;
+  }
+
+  .text-white\/70 {
+    color: var(--app-text-muted) !important;
+  }
+
+  .border-white\/5,
+  .border-white\/8,
+  .border-white\/10,
+  .border-white\/15 {
+    border-color: var(--app-border) !important;
+  }
+
+  .bg-white\/5,
+  .bg-white\/8,
+  .bg-white\/10,
+  .bg-white\/15 {
+    background-color: var(--app-overlay) !important;
+  }
+
+  .shadow-glass {
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  html.dark .shadow-glass {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
   }
 
   ::-webkit-scrollbar {
