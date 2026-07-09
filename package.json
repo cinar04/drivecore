@@ -1,7 +1,7 @@
 {
   "name": "drivecore-app",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.6.0",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -86,6 +86,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "firebase-admin": "^13.0.0",
     "@types/node": "^24.12.3",
     "@types/papaparse": "^5.5.2",
     "@types/qrcode": "^1.5.6",

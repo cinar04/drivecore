@@ -9,12 +9,14 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2563EB',
+          DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)',
           50: '#EFF6FF',
           100: '#DBEAFE',
-          500: '#3B82F6',
-          600: '#2563EB',
-          700: '#1D4ED8',
+          300: 'rgb(var(--accent-light-rgb) / <alpha-value>)',
+          400: 'rgb(var(--accent-light-rgb) / <alpha-value>)',
+          500: 'rgb(var(--accent-rgb) / <alpha-value>)',
+          600: 'rgb(var(--accent-rgb) / <alpha-value>)',
+          700: 'rgb(var(--accent-rgb) / <alpha-value>)',
           900: '#1E3A8A',
         },
         secondary: {
@@ -30,7 +32,13 @@ export default {
           surface: '#1E293B',
           card: '#111827',
         },
-        border: 'rgba(255,255,255,0.08)',
+        // Açık mod arka planları
+        light: {
+          bg: '#F1F5F9',
+          surface: '#FFFFFF',
+          card: '#F8FAFC',
+          border: 'rgba(0,0,0,0.08)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -67,6 +75,7 @@ export default {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.37)',
         'glow': '0 0 20px rgba(37, 99, 235, 0.3)',
         'glow-cyan': '0 0 20px rgba(6, 182, 212, 0.3)',
+        'light': '0 2px 12px rgba(0,0,0,0.08)',
       },
     },
   },

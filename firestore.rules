@@ -45,20 +45,48 @@ service cloud.firestore {
         resource.data.uid == request.auth.uid ||
         isMember(resource.data.orgId)
       );
-      allow create: if isAuth();
+      // Bir kullanıcı kendini üye olarak ekleyebilir SADECE şu durumlarda:
+      //  a) Yeni kurum kuruyorsa ve owner oluyorsa (createOrg akışı), VEYA
+      //  b) inviteToken alanıyla işaret ettiği orgInvites/{token} dokümanı:
+      //     - bu org'a ait, durumu 'pending', kendi e-postasına gönderilmiş,
+      //     - ve eklediği rol o davetteki rolle birebir aynıysa (acceptInvite akışı).
+      // Bu olmadan herhangi bir giriş yapmış kullanıcı, orgId'yi bilerek
+      // doğrudan kendini istediği role ile herhangi bir kuruma ekleyebilirdi.
+      allow create: if isAuth() && request.resource.data.uid == request.auth.uid &&
+        memberId == request.resource.data.orgId + '_' + request.auth.uid && (
+        (request.resource.data.role == 'owner' &&
+          get(/databases/$(database)/documents/orgs/$(request.resource.data.orgId)).data.ownerId == request.auth.uid)
+        ||
+        (
+          request.resource.data.inviteToken is string &&
+          get(/databases/$(database)/documents/orgInvites/$(request.resource.data.inviteToken)).data.status == 'pending' &&
+          get(/databases/$(database)/documents/orgInvites/$(request.resource.data.inviteToken)).data.orgId == request.resource.data.orgId &&
+          get(/databases/$(database)/documents/orgInvites/$(request.resource.data.inviteToken)).data.role == request.resource.data.role &&
+          get(/databases/$(database)/documents/orgInvites/$(request.resource.data.inviteToken)).data.email == request.auth.token.email.lower()
+        )
+      );
       allow update: if hasRole(resource.data.orgId, 'admin');
       allow delete: if hasRole(resource.data.orgId, 'admin') ||
                        request.auth.uid == resource.data.uid;
     }
 
     // ─── Davetler ─────────────────────────────────────────
+    // Doküman ID'si artık davet token'ının kendisi (bkz. inviteMember/acceptInvite).
+    // Bu sayede acceptInvite tarafında tekli getDoc kullanılabiliyor; query/list
+    // ile email/orgId'ye bağlı koşullu read kuralları Firestore'da güvenilir
+    // şekilde değerlendirilemiyordu (sonuç kümesinin TAMAMI için kanıtlanabilir
+    // olmalı), bu yüzden davet kabul akışı "permission-denied" ile patlıyordu.
     match /orgInvites/{inviteId} {
       allow read: if isAuth() && (
         isMember(resource.data.orgId) ||
-        resource.data.email == request.auth.token.email
+        resource.data.email == request.auth.token.email.lower()
       );
-      allow create: if hasRole(request.resource.data.orgId, 'admin');
-      allow update: if isAuth();
+      allow create: if hasRole(request.resource.data.orgId, 'admin') &&
+                       request.resource.data.token == inviteId;
+      allow update: if isAuth() && (
+        isMember(resource.data.orgId) ||
+        resource.data.email == request.auth.token.email.lower()
+      );
       allow delete: if hasRole(resource.data.orgId, 'admin');
     }
 
@@ -90,5 +118,17 @@ service cloud.firestore {
       allow read, write: if isMember(resource.data.orgId);
       allow create: if isMember(request.resource.data.orgId);
     }
+
+    // ─── E-posta Gönderim Kuyruğu (Outbox) ─────────────────
+    // Giriş yapmış herhangi bir kullanıcı bir e-posta olayı (kayıt, davet,
+    // çıkarma) tetiklendiğinde buraya yazabilir. Okuma/güncelleme/silme
+    // sadece GitHub Actions'taki Firebase Admin SDK ile yapılır — Admin SDK
+    // güvenlik kurallarını hiçe sayar, yani client tarafına read/write
+    // vermemize gerek yok. Kullanıcılar başkalarının kuyruğunu okuyamaz/değiştiremez.
+    match /mailOutbox/{mailId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if false;
+    }
+
   }
 }
