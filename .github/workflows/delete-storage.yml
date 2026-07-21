@@ -1,0 +1,35 @@
+name: Depolama Silme Kuyruğunu İşle
+
+# send-emails.yml ile birebir aynı desen: periyodik tarama YOK.
+# Depolama sayfasından bir dosya silindiği an, client'tan atılan
+# "repository_dispatch" isteğiyle bu workflow ANINDA tetiklenir
+# (bkz. src/hooks/useStorageFiles.ts -> triggerDeletionWorker).
+# "workflow_dispatch" ile elle de tetiklenebilir (ör. bir istek
+# bir sebeple ulaşmazsa, kuyrukta kalanları elle işlemek için).
+on:
+  repository_dispatch:
+    types: [storage-deletion-queued]
+  workflow_dispatch:
+
+jobs:
+  delete-storage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo'yu indir
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: firebase-admin kur
+        run: npm install firebase-admin --no-save
+
+      - name: Depolama silme kuyruğunu işle
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: node scripts/delete-storage-queue.mjs

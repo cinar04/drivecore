@@ -1,0 +1,40 @@
+name: E-posta Kuyruğunu Periyodik Kontrol Et
+
+# Ana tetikleme yolu (repository_dispatch) anlık çalışır ve genelde yeterlidir.
+# Ancak dispatch isteği bir sebeple (ağ hatası, GitHub API kesintisi vb.)
+# ulaşmazsa kuyrukta mail takılı kalmasın diye, bu workflow 08:00-21:00
+# (TR saati) arasında her 30 dakikada bir kuyruğu kontrol edip bekleyen
+# mailleri gönderir. Kuyruk zaten boşsa script hızlıca hiçbir şey yapmadan biter.
+#
+# Cron ifadeleri UTC'dir. Türkiye DST uygulamadığı için (UTC+3 sabit) hesap
+# basit: TR 08:00-20:30 -> UTC 05:00-17:30 (05-17 saatleri, :00 ve :30),
+# + TR 21:00 -> UTC 18:00 (tam kapsama için ayrı satır).
+on:
+  schedule:
+    - cron: '0,30 5-17 * * *'
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  poll-mail-outbox:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo'yu indir
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: firebase-admin kur
+        run: npm install firebase-admin --no-save
+
+      - name: Bekleyen e-postaları gönder
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          APP_RESET_PASSWORD_URL: ${{ secrets.APP_RESET_PASSWORD_URL }}
+          APP_LOGO_URL: ${{ secrets.APP_LOGO_URL }}
+        run: node scripts/send-mail-outbox.mjs
