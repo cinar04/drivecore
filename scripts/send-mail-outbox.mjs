@@ -207,6 +207,30 @@ const templates = {
       { preheader: `${data.orgName}: ${data.activeDrivers} sürücü, ${data.totalVehicles} araç, ${data.pendingAlerts} bekleyen uyarı.` }
     ),
   }),
+
+  document_expiring: (data) => {
+    const urgent = Number(data.daysLeft) <= 3;
+    const isVehicle = data.entityType === 'vehicle';
+    const possessive = isVehicle ? 'adlı aracın' : 'adlı sürücünün';
+    const ctaLabel = isVehicle ? 'Araç Sayfasına Git →' : 'Sürücü Sayfasına Git →';
+    const fallbackLink = isVehicle ? 'https://senin-domainin.com/#/vehicles' : 'https://senin-domainin.com/#/drivers';
+    return {
+      subject: `${data.driverName} — ${data.docLabel} süresi ${data.daysLeft} gün sonra doluyor`,
+      html: wrap(
+        `${escapeHtml(data.docLabel)} süresi yaklaşıyor`,
+        `<p><strong>${escapeHtml(data.driverName)}</strong> ${possessive}
+         <strong>${escapeHtml(data.docLabel)}</strong> belgesinin son geçerlilik tarihi
+         <strong>${escapeHtml(data.expiryDateFormatted)}</strong> — yani
+         <strong style="color:${urgent ? '#EF4444' : '#FBBF24'};">${data.daysLeft} gün</strong> sonra doluyor.</p>
+         <p style="margin-top:8px;">Süre dolmadan yeni belgeyi yükleyip son tarihi güncellemeni öneririz.</p>
+         ${ctaButton(data.driverLink || fallbackLink, ctaLabel, urgent ? '#EF4444' : '#F59E0B')}`,
+        {
+          preheader: `${data.driverName}: ${data.docLabel} süresi ${data.daysLeft} gün sonra doluyor.`,
+          accent: urgent ? '#EF4444' : '#F59E0B',
+        }
+      ),
+    };
+  },
 };
 
 function escapeHtml(str = '') {
