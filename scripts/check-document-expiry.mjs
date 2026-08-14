@@ -30,8 +30,8 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const {
   FIREBASE_SERVICE_ACCOUNT_JSON,
-  APP_DRIVER_BASE_URL = 'https://senin-domainin.com/#/drivers',
-  APP_VEHICLE_BASE_URL = 'https://senin-domainin.com/#/vehicles',
+  APP_DRIVER_BASE_URL = 'https://drivecore.web.app/#/drivers',
+  APP_VEHICLE_BASE_URL = 'https://drivecore.web.app/#/vehicles',
 } = process.env;
 
 if (!FIREBASE_SERVICE_ACCOUNT_JSON) {

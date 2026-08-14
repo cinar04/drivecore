@@ -28,10 +28,10 @@ const {
   // varsayılan boş/beyaz action-handler sayfası DEĞİL). HashRouter kullandığımız
   // için '#/reset-password' formatında olmalı. Kendi domainine göre GitHub
   // Secrets'a APP_RESET_PASSWORD_URL olarak ekle.
-  APP_RESET_PASSWORD_URL = 'https://senin-domainin.com/#/reset-password',
+  APP_RESET_PASSWORD_URL = 'https://drivecore.web.app/#/reset-password',
   // E-postalardaki logo — public/icon-512.png dosyanın canlıdaki tam adresi.
   // E-posta istemcileri yerel dosya gösteremez, mutlaka herkese açık bir URL olmalı.
-  APP_LOGO_URL = 'https://senin-domainin.com/icon-512.png',
+  APP_LOGO_URL = 'https://drivecore.web.app/icon-512.png',
 } = process.env;
 
 if (!FIREBASE_SERVICE_ACCOUNT_JSON) {

@@ -16,7 +16,7 @@ import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const {
   FIREBASE_SERVICE_ACCOUNT_JSON,
-  APP_DASHBOARD_URL = 'https://senin-domainin.com/#/dashboard',
+  APP_DASHBOARD_URL = 'https://drivecore.web.app/#/dashboard',
 } = process.env;
 
 if (!FIREBASE_SERVICE_ACCOUNT_JSON) {
